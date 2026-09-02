@@ -60,7 +60,7 @@ Extracted and stored data is classified into:
 
 ## Scope of study
 
-| Area | In this prototype (by 6 Sep) | Later / full SIH vision |
+| Area | In this prototype | Later / full SIH vision |
 | --- | --- | --- |
 | Document ingest | Upload scanned images and PDFs | Historical bulk ingest, maps, cadastral sheets |
 | OCR / CV | Printed + simple handwritten text (primary language + one extra if time) | Major Indian languages, damaged/faded pages |
