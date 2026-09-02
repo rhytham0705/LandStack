@@ -102,8 +102,9 @@ Until then the schema is ready for those rows (same fields as the table above, p
 
 ---
 
-## High-level architecture (planned)
-
+## High-level architecture 
+## Simple architecture
+Three layers only — 
 ```
 [Officer UI]  →  [API]  →  [OCR + field extraction]
                     ↓
@@ -112,9 +113,62 @@ Until then the schema is ready for those rows (same fields as the table above, p
          [Review queue]  →  [Land records DB (5 samples)]
                     ↓
               [Dashboard + stub LRMS/GIS APIs]
+┌─────────────────────────────────────────────────────────┐
+│  UI  (officer)                                          │
+│  Upload document · Dashboard · Review / correct fields  │
+└──────────────────────────┬──────────────────────────────┘
+                           │ HTTP
+┌──────────────────────────▼──────────────────────────────┐
+│  API  (backend)                                         │
+│  1. Save file                                           │
+│  2. OCR + field extraction                              │
+│  3. Validation + confidence score                       │
+│  4. If score low → review queue, else save              │
+└─────────────┬─────────────────────────────┬─────────────┘
+              │                             │
+              ▼                             ▼
+┌─────────────────────────┐    ┌─────────────────────────┐
+│  SQLite DB              │    │  Stub integrations      │
+│  5 land records         │    │  LRMS / DILRMP / GIS    │
+│  documents + audit log  │    │  (fake responses)       │
+└─────────────────────────┘    └─────────────────────────┘
 ```
-
+### How one document moves
+```mermaid
+flowchart LR
+  A[Upload PDF / image] --> B[OCR]
+  B --> C[Fill land fields]
+  C --> D{Confidence OK?}
+  D -->|Yes| E[Save to DB]
+  D -->|No| F[Officer review]
+  F --> E
+  E --> G[Dashboard]
+```
+| Layer | What it does | Simple choice |
+| --- | --- | --- |
+| **UI** | Upload, see dashboard, edit low-confidence fields | Web pages (HTML or React) |
+| **API** | Run extract → validate → save | Python FastAPI or Flask |
+| **AI** | Read text, map to khasra / khata / owner / village… | Tesseract OCR + field rules (no heavy ML for v1) |
+| **DB** | Store 5 sample records + new extractions | SQLite |
+| **Stubs** | Pretend LRMS / GIS exist | Dummy JSON APIs |
+### Folder layout (this repo)
+```
+LandStack/
+  README.md
+  app/
+    main.py              # API: upload, extract, review, dashboard stats
+    extract.py           # OCR + map text to land fields
+    validate.py          # rules, duplicates, confidence
+    stubs.py             # fake LRMS / DILRMP / GIS
+  data/
+    landstack.db         # SQLite (5 seed records)
+    uploads/             # scanned files
+  web/
+    index.html           # upload + dashboard + review
+```
+**Login / roles** can stay minimal (one officer user) for the prototype. Live government databases are not required — stubs are enough.
 ---
+
 
 ## Timeline
 
