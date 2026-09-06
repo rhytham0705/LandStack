@@ -571,7 +571,7 @@ def validate_record(
 # ---------------------------------------------------------
 
 if __name__ == "__main__":
-
+'''
     sample_record = {
         "landowner_name": "Ramesh Kumar",
         "survey_number": "12/A",
@@ -613,7 +613,7 @@ if __name__ == "__main__":
             "district": "Raipur",
         }
     ]
-
+'''
     result = validate_record(
         sample_record,
         existing_records,
